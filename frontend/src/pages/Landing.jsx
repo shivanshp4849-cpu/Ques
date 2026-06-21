@@ -5,19 +5,23 @@ import SplineLogo from "@/components/clearpath/SplineLogo";
 import MeshBackground from "@/components/clearpath/MeshBackground";
 
 export default function Landing() {
-    const [phase, setPhase] = useState("intro"); // intro -> logo -> landing
+    const [phase, setPhase] = useState("intro"); // intro -> dissolve -> landing
     const videoRef = useRef(null);
 
     useEffect(() => {
-        const t1 = setTimeout(() => setPhase((p) => (p === "intro" ? "logo" : p)), 5500);
-        const t2 = setTimeout(() => setPhase((p) => (p === "logo" || p === "intro" ? "landing" : p)), 7800);
+        const t1 = setTimeout(() => setPhase((p) => (p === "intro" ? "dissolve" : p)), 5200);
+        // dissolve plays its blur ramp for ~1.6s, then content is fully landing
+        const t2 = setTimeout(() => setPhase((p) => (p === "intro" || p === "dissolve" ? "landing" : p)), 6900);
         return () => {
             clearTimeout(t1);
             clearTimeout(t2);
         };
     }, []);
 
-    const onVideoEnd = () => setPhase("logo");
+    const onVideoEnd = () => setPhase((p) => (p === "intro" ? "dissolve" : p));
+
+    const introVisible = phase === "intro" || phase === "dissolve";
+    const dissolving = phase === "dissolve" || phase === "landing";
 
     return (
         <div
@@ -36,34 +40,15 @@ export default function Landing() {
                     inset: 0,
                     zIndex: 100,
                     background: "#000",
-                    opacity: phase === "intro" ? 1 : 0,
-                    pointerEvents: phase === "intro" ? "auto" : "none",
-                    transition: "opacity 1.1s ease",
+                    opacity: phase === "landing" ? 0 : 1,
+                    visibility: introVisible || phase === "landing" ? "visible" : "hidden",
+                    pointerEvents: introVisible ? "auto" : "none",
+                    transition: "opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 1.4s",
                     overflow: "hidden",
                 }}
                 data-testid="intro-video-layer"
             >
-                {/* Blurred backdrop copy fills the frame so we never see black bars */}
-                <video
-                    src="/assets/intro.mp4"
-                    autoPlay
-                    muted
-                    playsInline
-                    loop
-                    preload="auto"
-                    aria-hidden="true"
-                    style={{
-                        position: "absolute",
-                        inset: 0,
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        filter: "blur(36px) saturate(140%) brightness(0.6)",
-                        transform: "scale(1.15)",
-                        zIndex: 0,
-                    }}
-                />
-                {/* Crisp foreground at native aspect ratio + sharpening filters */}
+                {/* Crisp foreground — zero filters initially, blur ramps up only during dissolve */}
                 <video
                     ref={videoRef}
                     src="/assets/intro.mp4"
@@ -74,19 +59,20 @@ export default function Landing() {
                     onEnded={onVideoEnd}
                     onError={onVideoEnd}
                     style={{
-                        position: "relative",
-                        zIndex: 1,
+                        position: "absolute",
+                        inset: 0,
                         width: "100%",
                         height: "100%",
-                        objectFit: "contain",
-                        filter:
-                            "contrast(1.18) saturate(1.22) brightness(1.05) drop-shadow(0 0 60px rgba(249,115,22,0.25))",
-                        imageRendering: "high-quality",
+                        objectFit: "cover",
+                        filter: dissolving
+                            ? "blur(28px) saturate(1.8) brightness(1.15)"
+                            : "blur(0px) saturate(1.05) brightness(1.02)",
+                        transform: dissolving ? "scale(1.12)" : "scale(1)",
+                        transition: "filter 1.4s cubic-bezier(0.16,1,0.3,1), transform 1.4s cubic-bezier(0.16,1,0.3,1)",
                         WebkitTransform: "translateZ(0)",
-                        transform: "translateZ(0)",
                     }}
                 />
-                {/* subtle vignette */}
+                {/* Orange bloom that flares during dissolve — feels like the world ignites into the dashboard */}
                 <div
                     aria-hidden="true"
                     style={{
@@ -95,13 +81,11 @@ export default function Landing() {
                         zIndex: 2,
                         pointerEvents: "none",
                         background:
-                            "radial-gradient(circle at 50% 50%, transparent 45%, rgba(0,0,0,0.55) 100%)",
+                            "radial-gradient(circle at 50% 60%, rgba(249,115,22,0.45), transparent 60%)",
+                        opacity: dissolving ? 1 : 0,
+                        transition: "opacity 1.4s cubic-bezier(0.16,1,0.3,1)",
                     }}
                 />
-                {/* CRT grain + scanlines + flicker — disguises AI-source softness with stylized texture */}
-                <div className="crt-grain" aria-hidden="true" />
-                <div className="crt-overlay" aria-hidden="true" />
-                <div className="crt-flicker" aria-hidden="true" />
                 <div
                     style={{
                         position: "absolute",
@@ -110,10 +94,12 @@ export default function Landing() {
                         right: 0,
                         textAlign: "center",
                         zIndex: 3,
+                        opacity: phase === "intro" ? 1 : 0,
+                        transition: "opacity 0.5s ease",
                     }}
                 >
                     <button
-                        onClick={() => setPhase("landing")}
+                        onClick={() => setPhase("dissolve")}
                         className="btn ghost"
                         data-testid="skip-intro-btn"
                     >
@@ -122,52 +108,8 @@ export default function Landing() {
                 </div>
             </div>
 
-            {/* Logo layer */}
-            <div
-                style={{
-                    position: "fixed",
-                    inset: 0,
-                    zIndex: 90,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "var(--bg)",
-                    opacity: phase === "logo" ? 1 : 0,
-                    visibility: phase === "logo" ? "visible" : "hidden",
-                    pointerEvents: phase === "logo" ? "auto" : "none",
-                    transition: "opacity 1.1s ease, visibility 0s linear 1.1s",
-                }}
-                data-testid="logo-layer"
-            >
-                <div style={{ textAlign: "center" }}>
-                    <div
-                        className="display flow-gradient"
-                        style={{
-                            fontSize: 84,
-                            fontWeight: 700,
-                            letterSpacing: "0.16em",
-                            animation: "logo-pulse 2.4s ease-in-out infinite, flowShift 6s linear infinite",
-                        }}
-                    >
-                        CLEARPATH
-                    </div>
-                    <div
-                        className="mono"
-                        style={{
-                            fontSize: 16,
-                            color: "var(--text-dim)",
-                            marginTop: 12,
-                            letterSpacing: "0.4em",
-                        }}
-                    >
-                        OPERATING SYSTEM
-                    </div>
-                </div>
-                <style>{`@keyframes logo-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}`}</style>
-            </div>
-
-            {/* Landing content */}
-            <LandingContent visible={phase === "landing"} />
+            {/* Landing content — starts fading in during the dissolve so the intro melts into it */}
+            <LandingContent visible={phase === "dissolve" || phase === "landing"} />
         </div>
     );
 }
