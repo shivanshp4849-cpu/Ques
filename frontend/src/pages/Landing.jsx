@@ -21,7 +21,6 @@ export default function Landing() {
     const onVideoEnd = () => setPhase((p) => (p === "intro" ? "dissolve" : p));
 
     const introVisible = phase === "intro" || phase === "dissolve";
-    const dissolving = phase === "dissolve" || phase === "landing";
 
     return (
         <div
@@ -33,7 +32,7 @@ export default function Landing() {
             }}
             data-testid="landing-page"
         >
-            {/* Intro video layer */}
+            {/* Intro video layer — raw, no filters, plain opacity fade only */}
             <div
                 style={{
                     position: "fixed",
@@ -44,11 +43,9 @@ export default function Landing() {
                     visibility: introVisible || phase === "landing" ? "visible" : "hidden",
                     pointerEvents: introVisible ? "auto" : "none",
                     transition: "opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 1.4s",
-                    overflow: "hidden",
                 }}
                 data-testid="intro-video-layer"
             >
-                {/* Crisp foreground — zero filters initially, blur ramps up only during dissolve */}
                 <video
                     ref={videoRef}
                     src="/assets/intro.mp4"
@@ -64,26 +61,6 @@ export default function Landing() {
                         width: "100%",
                         height: "100%",
                         objectFit: "cover",
-                        filter: dissolving
-                            ? "blur(28px) saturate(1.8) brightness(1.15)"
-                            : "blur(0px) saturate(1.05) brightness(1.02)",
-                        transform: dissolving ? "scale(1.12)" : "scale(1)",
-                        transition: "filter 1.4s cubic-bezier(0.16,1,0.3,1), transform 1.4s cubic-bezier(0.16,1,0.3,1)",
-                        WebkitTransform: "translateZ(0)",
-                    }}
-                />
-                {/* Orange bloom that flares during dissolve — feels like the world ignites into the dashboard */}
-                <div
-                    aria-hidden="true"
-                    style={{
-                        position: "absolute",
-                        inset: 0,
-                        zIndex: 2,
-                        pointerEvents: "none",
-                        background:
-                            "radial-gradient(circle at 50% 60%, rgba(249,115,22,0.45), transparent 60%)",
-                        opacity: dissolving ? 1 : 0,
-                        transition: "opacity 1.4s cubic-bezier(0.16,1,0.3,1)",
                     }}
                 />
                 <div
