@@ -777,3 +777,130 @@ select:focus {
     transform: none;
 }
 
+/* ===== DataCrystal (small interactive widget) ===== */
+.data-crystal {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s;
+}
+.data-crystal:hover {
+    transform: scale(1.08);
+    filter: brightness(1.15);
+}
+.data-crystal:hover .dc-spin {
+    animation-duration: 2.4s;
+}
+.data-crystal:hover .dc-core {
+    filter: drop-shadow(0 0 12px var(--core-color));
+}
+.dc-rig {
+    transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+}
+.dc-spin {
+    transform-origin: 0 0;
+    transform-box: fill-box;
+    animation: dcSpin 6s linear infinite;
+}
+.dc-spin-rev {
+    transform-origin: 0 0;
+    transform-box: fill-box;
+    animation: dcSpin 9s linear infinite reverse;
+}
+.dc-core {
+    animation: dcCorePulse 2.4s ease-in-out infinite;
+}
+@keyframes dcSpin {
+    to {
+        transform: rotateY(360deg) rotateX(20deg);
+    }
+}
+@keyframes dcCorePulse {
+    0%,
+    100% {
+        opacity: 0.85;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+.dc-burst {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: dcBurst 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+}
+@keyframes dcBurst {
+    0% {
+        transform: scale(0.4);
+        opacity: 0.9;
+    }
+    100% {
+        transform: scale(3.2);
+        opacity: 0;
+    }
+}
+
+/* ===== CRT intro overlay ===== */
+.crt-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+    mix-blend-mode: overlay;
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.04) 0px,
+            rgba(255, 255, 255, 0.04) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+    opacity: 0.6;
+}
+.crt-grain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0.25;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.7 0'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>");
+    animation: grainShift 0.55s steps(3) infinite;
+}
+@keyframes grainShift {
+    0% {
+        transform: translate(0, 0);
+    }
+    33% {
+        transform: translate(-8px, 4px);
+    }
+    66% {
+        transform: translate(6px, -6px);
+    }
+    100% {
+        transform: translate(0, 0);
+    }
+}
+.crt-flicker {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+    background: rgba(249, 115, 22, 0.04);
+    animation: crtFlicker 4s linear infinite;
+}
+@keyframes crtFlicker {
+    0%,
+    97%,
+    100% {
+        opacity: 0;
+    }
+    97.5% {
+        opacity: 0.6;
+    }
+    98% {
+        opacity: 0;
+    }
+    98.5% {
+        opacity: 0.3;
+    }
+}
+

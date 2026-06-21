@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import LiveDot from "./LiveDot";
+import DataCrystal from "./DataCrystal";
 
 const LINKS = [
     { to: "/god-mode", label: "GOD MODE", icon: "⊕" },
@@ -47,6 +48,7 @@ export default function NavBar({ onCmd }) {
                     </NavLink>
                 ))}
                 <div className="nav-right">
+                    <DataCrystal size={36} label="CORE" showLabel={false} testId="nav-crystal" />
                     <button
                         className="btn ghost"
                         onClick={onCmd}

@@ -98,6 +98,10 @@ export default function Landing() {
                             "radial-gradient(circle at 50% 50%, transparent 45%, rgba(0,0,0,0.55) 100%)",
                     }}
                 />
+                {/* CRT grain + scanlines + flicker — disguises AI-source softness with stylized texture */}
+                <div className="crt-grain" aria-hidden="true" />
+                <div className="crt-overlay" aria-hidden="true" />
+                <div className="crt-flicker" aria-hidden="true" />
                 <div
                     style={{
                         position: "absolute",
