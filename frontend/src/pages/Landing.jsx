@@ -39,26 +39,63 @@ export default function Landing() {
                     opacity: phase === "intro" ? 1 : 0,
                     pointerEvents: phase === "intro" ? "auto" : "none",
                     transition: "opacity 1.1s ease",
+                    overflow: "hidden",
                 }}
                 data-testid="intro-video-layer"
             >
+                {/* Blurred backdrop copy fills the frame so we never see black bars */}
+                <video
+                    src="/assets/intro.mp4"
+                    autoPlay
+                    muted
+                    playsInline
+                    loop
+                    preload="auto"
+                    aria-hidden="true"
+                    style={{
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        filter: "blur(36px) saturate(140%) brightness(0.6)",
+                        transform: "scale(1.15)",
+                        zIndex: 0,
+                    }}
+                />
+                {/* Crisp foreground at native aspect ratio + sharpening filters */}
                 <video
                     ref={videoRef}
                     src="/assets/intro.mp4"
                     autoPlay
                     muted
                     playsInline
+                    preload="auto"
                     onEnded={onVideoEnd}
                     onError={onVideoEnd}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{
+                        position: "relative",
+                        zIndex: 1,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        filter:
+                            "contrast(1.18) saturate(1.22) brightness(1.05) drop-shadow(0 0 60px rgba(249,115,22,0.25))",
+                        imageRendering: "high-quality",
+                        WebkitTransform: "translateZ(0)",
+                        transform: "translateZ(0)",
+                    }}
                 />
+                {/* subtle vignette */}
                 <div
+                    aria-hidden="true"
                     style={{
                         position: "absolute",
                         inset: 0,
+                        zIndex: 2,
                         pointerEvents: "none",
                         background:
-                            "radial-gradient(circle at 50% 50%, transparent 30%, rgba(0,0,0,0.6) 100%)",
+                            "radial-gradient(circle at 50% 50%, transparent 45%, rgba(0,0,0,0.55) 100%)",
                     }}
                 />
                 <div
@@ -68,6 +105,7 @@ export default function Landing() {
                         left: 0,
                         right: 0,
                         textAlign: "center",
+                        zIndex: 3,
                     }}
                 >
                     <button
@@ -387,7 +425,7 @@ function LandingContent({ visible }) {
                             </Magnet>
                             <Magnet>
                                 <Link to="/intelligence" className="btn ghost" data-testid="cta-intel" style={{ fontSize: 12, padding: "12px 22px" }}>
-                                    📊 VIEW INTELLIGENCE
+                                    VIEW INTELLIGENCE
                                 </Link>
                             </Magnet>
                         </div>
