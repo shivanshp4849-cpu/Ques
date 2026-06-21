@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import NavBar from "@/components/clearpath/NavBar";
 import CommandPalette from "@/components/clearpath/CommandPalette";
+import CursorGlow from "@/components/clearpath/CursorGlow";
 import Landing from "@/pages/Landing";
 import GodMode from "@/pages/GodMode";
 import Sentinel from "@/pages/Sentinel";
@@ -26,6 +27,7 @@ function Shell() {
 
     return (
         <>
+            <CursorGlow />
             {showNav && <NavBar onCmd={() => setCmd(true)} />}
             <div key={loc.pathname} className="page-enter">
                 <Routes>

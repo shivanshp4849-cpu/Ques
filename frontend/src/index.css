@@ -593,3 +593,187 @@ select:focus {
         transform: none;
     }
 }
+
+/* ===== Custom glassy cursor ===== */
+.cursor-hidden,
+.cursor-hidden * {
+    cursor: none !important;
+}
+.cursor-orb,
+.cursor-dot,
+.cursor-trail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 99999;
+    will-change: transform;
+}
+.cursor-orb {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(8px) saturate(160%);
+    -webkit-backdrop-filter: blur(8px) saturate(160%);
+    transition:
+        width 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+        height 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.22s ease,
+        box-shadow 0.22s ease;
+    mix-blend-mode: screen;
+}
+.cursor-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+}
+.cursor-trail {
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(249, 115, 22, 0.16) 0%,
+        rgba(249, 115, 22, 0.04) 35%,
+        transparent 70%
+    );
+    filter: blur(28px);
+    opacity: 0.85;
+}
+
+/* ===== Spline logo animations ===== */
+.orbit-spin {
+    transform-origin: 0 0;
+    animation: spinSlow 12s linear infinite;
+}
+.orbit-ring {
+    animation: spinSlow 22s linear infinite;
+}
+.orbit-ring-2 {
+    animation: spinSlow 14s linear infinite reverse;
+}
+.logo-core {
+    animation: corePulse 6s ease-in-out infinite;
+}
+@keyframes spinSlow {
+    to {
+        transform: rotateZ(360deg) rotateX(72deg);
+    }
+}
+@keyframes corePulse {
+    0%,
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.04);
+        filter: brightness(1.15);
+    }
+}
+.float-chip {
+    animation: floatChip 4.5s ease-in-out infinite;
+}
+@keyframes floatChip {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+/* ===== Kinetic typography ===== */
+.kinetic-char {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(40px) rotateX(-90deg);
+    transform-origin: 50% 100%;
+    animation: kineticIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.kinetic-char.gradient {
+    background: linear-gradient(
+        110deg,
+        #f97316 0%,
+        #fbbf24 20%,
+        #f97316 40%,
+        #06b6d4 60%,
+        #f97316 80%,
+        #fbbf24 100%
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation:
+        kineticIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+        flowShift 6s linear infinite;
+}
+@keyframes kineticIn {
+    to {
+        opacity: 1;
+        transform: translateY(0) rotateX(0deg);
+    }
+}
+.flow-gradient {
+    background: linear-gradient(
+        110deg,
+        #f97316 0%,
+        #fbbf24 20%,
+        #f97316 40%,
+        #06b6d4 60%,
+        #f97316 80%,
+        #fbbf24 100%
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: flowShift 6s linear infinite;
+}
+@keyframes flowShift {
+    to {
+        background-position: -300% 0;
+    }
+}
+
+/* Marquee */
+.marquee {
+    overflow: hidden;
+    white-space: nowrap;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee-track {
+    display: inline-flex;
+    gap: 3rem;
+    animation: marqueeShift 28s linear infinite;
+    will-change: transform;
+}
+@keyframes marqueeShift {
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+/* Magnetic hover */
+.magnet {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Reveal section */
+.reveal {
+    opacity: 0;
+    transform: translateY(36px);
+    transition:
+        opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.in {
+    opacity: 1;
+    transform: none;
+}
+
