@@ -16,7 +16,9 @@ import {
     SimulatePlacedAssets,
     SimulateRadarSweep,
     tealIncidentIds,
+    ASSET_TYPES,
 } from "@/components/clearpath/SimulateTab";
+import HolographicSkyline from "@/components/clearpath/HolographicSkyline";
 import { API, ASSET_BASE, getJSON, wsURL } from "@/lib/api";
 import { callPlanStream } from "@/lib/parsePlanStream";
 
@@ -31,8 +33,12 @@ const sevColor = (s) => {
     return "#06b6d4";
 };
 
-function MapClickCatcher({ onClick }) {
-    useMapEvents({ click: (e) => onClick(e.latlng) });
+function MapClickCatcher({ onClick, onHover }) {
+    useMapEvents({
+        click: (e) => onClick(e.latlng),
+        mousemove: (e) => onHover?.(e.latlng),
+        mouseout: () => onHover?.(null),
+    });
     return null;
 }
 
@@ -193,7 +199,8 @@ export default function GodMode() {
     // Reset simulate state when leaving SIMULATE tab
     useEffect(() => {
         if (tab !== "SIMULATE") sim.reset();
-    }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tab]);
     const isSim = tab === "SIMULATE";
     const tealSet = useMemo(
         () => (isSim && sim.simulationResult ? tealIncidentIds(sim.placedAssets, incidents) : new Set()),
@@ -209,6 +216,10 @@ export default function GodMode() {
         onMapClick(latlng);
     };
 
+    // Cursor-follow preview circle when an asset type is selected in SIMULATE
+    const [hoverLatLng, setHoverLatLng] = useState(null);
+    const previewMeta = isSim && sim.selectedAssetType ? ASSET_TYPES[sim.selectedAssetType] : null;
+
     return (
         <div style={{ height: "calc(100vh - 49px)", position: "relative", background: "var(--bg)" }} data-testid="god-mode-page">
             {/* MAP */}
@@ -217,7 +228,7 @@ export default function GodMode() {
                     url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                     attribution='&copy; <a href="https://carto.com">CARTO</a>'
                 />
-                <MapClickCatcher onClick={handleMapClick} />
+                <MapClickCatcher onClick={handleMapClick} onHover={isSim ? setHoverLatLng : undefined} />
 
                 {incidents.map((i) => {
                     const sev = severityVariant(i.severity);
@@ -326,6 +337,34 @@ export default function GodMode() {
 
                 {/* Urban Architect: placed assets + coverage circles */}
                 {isSim && <SimulatePlacedAssets sim={sim} />}
+
+                {/* Cursor-follow preview circle when an asset type is selected */}
+                {isSim && previewMeta && hoverLatLng && (
+                    <>
+                        <Circle
+                            center={[hoverLatLng.lat, hoverLatLng.lng]}
+                            radius={previewMeta.radius_km * 1000}
+                            pathOptions={{
+                                color: previewMeta.color,
+                                fillColor: previewMeta.color,
+                                fillOpacity: 0.05,
+                                weight: 1.2,
+                                dashArray: "3 4",
+                                opacity: 0.7,
+                            }}
+                        />
+                        <CircleMarker
+                            center={[hoverLatLng.lat, hoverLatLng.lng]}
+                            radius={6}
+                            pathOptions={{
+                                color: previewMeta.color,
+                                fillColor: previewMeta.color,
+                                fillOpacity: 0.6,
+                                weight: 1.5,
+                            }}
+                        />
+                    </>
+                )}
             </MapContainer>
 
             {/* Radar sweep overlay over the map */}
@@ -449,7 +488,14 @@ export default function GodMode() {
                 }}
             >
                 {isSim ? (
-                    <SimulateCityHealth sim={sim} />
+                    <>
+                        <SimulateCityHealth sim={sim} />
+                        <HolographicSkyline
+                            placedAssets={sim.placedAssets}
+                            onRemove={sim.removeAsset}
+                            simulationResult={sim.simulationResult}
+                        />
+                    </>
                 ) : (
                 <>
                 <Panel title={`STATION STATUS · ${stationsMerged.length}`} testId="stations-panel">

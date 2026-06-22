@@ -976,3 +976,95 @@ select:focus {
     }
 }
 
+/* ===== Holographic skyline ===== */
+.sky-tower {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+    animation: skyRise 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s;
+}
+.sky-tower:hover {
+    transform: translateY(-4px) scale(1.06) !important;
+    filter: brightness(1.2) drop-shadow(0 0 12px rgba(249, 115, 22, 0.5));
+}
+@keyframes skyRise {
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+.sky-blink {
+    animation: skyBlink 1.4s ease-in-out infinite;
+}
+@keyframes skyBlink {
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+.sky-sweep {
+    animation: skySweep 5s linear infinite;
+}
+@keyframes skySweep {
+    0% {
+        transform: translateX(-40px);
+    }
+    100% {
+        transform: translateX(640px);
+    }
+}
+
+/* ===== Asset placement burst (fired when click places an asset) ===== */
+@keyframes placeBurst {
+    0% {
+        transform: translate(-50%, -50%) scale(0.4);
+        opacity: 0.85;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2.6);
+        opacity: 0;
+    }
+}
+.place-burst {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    pointer-events: none;
+    animation: placeBurst 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ===== Tier medal in city health ===== */
+.tier-medal {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    box-shadow: 0 0 22px currentColor, inset 0 0 14px rgba(255, 255, 255, 0.06);
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.08), transparent 60%);
+}
+.tier-medal::before {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 1px dashed currentColor;
+    opacity: 0.55;
+    animation: spinSlow 18s linear infinite;
+}
+.tier-medal-letter {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 14px currentColor;
+}
+

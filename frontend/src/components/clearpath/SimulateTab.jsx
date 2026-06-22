@@ -175,6 +175,37 @@ export function useSimulateState() {
     };
 }
 
+// SVG iconography for each asset type (replaces single-letter glyphs)
+function AssetIcon({ type, color, size = 18 }) {
+    const stroke = color;
+    if (type === "response_hub") {
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+                <path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1v-9z" stroke={stroke} strokeWidth="1.6" />
+                <path d="M10 21v-6h4v6" stroke={stroke} strokeWidth="1.6" />
+                <circle cx="12" cy="9" r="1.2" fill={stroke} />
+            </svg>
+        );
+    }
+    if (type === "drainage_grid") {
+        return (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+                <path d="M12 3c4 5 6 8 6 11a6 6 0 1 1-12 0c0-3 2-6 6-11z" stroke={stroke} strokeWidth="1.6" />
+                <path d="M9 14c1 1 2 1.5 3 1.5s2-.5 3-1.5" stroke={stroke} strokeWidth="1.4" />
+            </svg>
+        );
+    }
+    // maintenance_depot
+    return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+            <path d="M4 18l3-9h10l3 9" stroke={stroke} strokeWidth="1.6" />
+            <path d="M2 18h20" stroke={stroke} strokeWidth="1.6" />
+            <path d="M8 18v3M16 18v3" stroke={stroke} strokeWidth="1.4" />
+            <rect x="10" y="11" width="4" height="3" stroke={stroke} strokeWidth="1.4" />
+        </svg>
+    );
+}
+
 // ===== Asset palette (left panel) =====
 export function SimulateAssetPalette({ sim, incidents }) {
     const {
@@ -218,22 +249,21 @@ export function SimulateAssetPalette({ sim, incidents }) {
                             <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                                 <div
                                     style={{
-                                        width: 32,
-                                        height: 32,
-                                        borderRadius: 4,
+                                        width: 34,
+                                        height: 34,
+                                        borderRadius: 6,
                                         background: `${a.color}22`,
                                         border: `1px solid ${a.color}`,
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",
-                                        fontFamily: "var(--font-mono)",
-                                        fontSize: 16,
                                         color: a.color,
                                         flexShrink: 0,
-                                        boxShadow: `0 0 12px ${a.color}66`,
+                                        boxShadow: selected ? `0 0 18px ${a.color}88` : `0 0 8px ${a.color}33`,
+                                        transition: "box-shadow 0.3s",
                                     }}
                                 >
-                                    {a.icon}
+                                    <AssetIcon type={a.key} color={a.color} size={20} />
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div
@@ -403,17 +433,22 @@ export function SimulatePlacedAssets({ sim }) {
             })}
             {placedAssets.map((a) => {
                 const meta = ASSET_TYPES[a.type];
+                const iconSvg = a.type === "response_hub"
+                    ? `<path d='M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1v-9z' stroke='${meta.color}' stroke-width='1.6' fill='none'/><path d='M10 21v-6h4v6' stroke='${meta.color}' stroke-width='1.6' fill='none'/>`
+                    : a.type === "drainage_grid"
+                    ? `<path d='M12 3c4 5 6 8 6 11a6 6 0 1 1-12 0c0-3 2-6 6-11z' stroke='${meta.color}' stroke-width='1.6' fill='none'/>`
+                    : `<path d='M4 18l3-9h10l3 9' stroke='${meta.color}' stroke-width='1.6' fill='none'/><path d='M2 18h20' stroke='${meta.color}' stroke-width='1.6'/>`;
                 const ic = L.divIcon({
                     className: "asset-pin",
-                    html: `<div style="
-            width:28px;height:28px;border-radius:4px;
-            background:${meta.color}22;border:1.5px solid ${meta.color};
+                    html: `<div class="asset-pin-inner" style="
+            width:36px;height:36px;border-radius:6px;
+            background:linear-gradient(135deg, ${meta.color}33, ${meta.color}11);
+            border:1.5px solid ${meta.color};
             display:flex;align-items:center;justify-content:center;
-            font-family:'Share Tech Mono',monospace;font-size:14px;color:${meta.color};
-            box-shadow:0 0 14px ${meta.color}88;
-          ">${meta.icon}</div>`,
-                    iconSize: [28, 28],
-                    iconAnchor: [14, 14],
+            box-shadow:0 0 18px ${meta.color}aa, inset 0 0 8px ${meta.color}44;
+          "><svg width="22" height="22" viewBox="0 0 24 24">${iconSvg}</svg></div>`,
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 18],
                 });
                 return (
                     <Marker
@@ -516,12 +551,22 @@ export function SimulateCityHealth({ sim }) {
                 <div className="fade-in" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                     <div style={{ textAlign: "center" }}>
                         <ArcGauge value={gr} tier={tier.l} tierColor={tier.c} />
-                        <div className="mono" style={{ fontSize: 44, color: tier.c, textShadow: `0 0 14px ${tier.c}` }}>
-                            <AnimatedNumber value={gr} decimals={1} suffix="%" />
-                        </div>
-                        <div className="display" style={{ fontSize: 10, color: "var(--text-mute)", letterSpacing: "0.18em" }}>
-                            GRID RESILIENCE · TIER{" "}
-                            <span style={{ color: tier.c, fontWeight: 700 }}>{tier.l}</span>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginTop: 4 }}>
+                            <div
+                                className="tier-medal"
+                                style={{ color: tier.c }}
+                                data-testid={`tier-medal-${tier.l}`}
+                            >
+                                <span className="tier-medal-letter" style={{ color: tier.c }}>{tier.l}</span>
+                            </div>
+                            <div style={{ textAlign: "left" }}>
+                                <div className="mono" style={{ fontSize: 44, lineHeight: 1, color: tier.c, textShadow: `0 0 14px ${tier.c}` }}>
+                                    <AnimatedNumber value={gr} decimals={1} suffix="%" />
+                                </div>
+                                <div className="display" style={{ fontSize: 10, color: "var(--text-mute)", letterSpacing: "0.2em", marginTop: 4 }}>
+                                    GRID RESILIENCE
+                                </div>
+                            </div>
                         </div>
                     </div>
 
