@@ -8,6 +8,15 @@ import AnimatedNumber from "@/components/clearpath/AnimatedNumber";
 import AnimatedBar from "@/components/clearpath/AnimatedBar";
 import AgentStepRow from "@/components/clearpath/AgentStepRow";
 import Skeleton from "@/components/clearpath/Skeleton";
+import {
+    useSimulateState,
+    SimulateAssetPalette,
+    SimulateBudgetBar,
+    SimulateCityHealth,
+    SimulatePlacedAssets,
+    SimulateRadarSweep,
+    tealIncidentIds,
+} from "@/components/clearpath/SimulateTab";
 import { API, ASSET_BASE, getJSON, wsURL } from "@/lib/api";
 import { callPlanStream } from "@/lib/parsePlanStream";
 
@@ -179,6 +188,27 @@ export default function GodMode() {
         });
     }, [stations, stationAvail]);
 
+    // ===== Urban Architect simulate state =====
+    const sim = useSimulateState();
+    // Reset simulate state when leaving SIMULATE tab
+    useEffect(() => {
+        if (tab !== "SIMULATE") sim.reset();
+    }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
+    const isSim = tab === "SIMULATE";
+    const tealSet = useMemo(
+        () => (isSim && sim.simulationResult ? tealIncidentIds(sim.placedAssets, incidents) : new Set()),
+        [isSim, sim.simulationResult, sim.placedAssets, incidents],
+    );
+
+    // Override map click in SIMULATE mode → place asset
+    const handleMapClick = (latlng) => {
+        if (isSim) {
+            sim.placeAsset(latlng.lat, latlng.lng);
+            return;
+        }
+        onMapClick(latlng);
+    };
+
     return (
         <div style={{ height: "calc(100vh - 49px)", position: "relative", background: "var(--bg)" }} data-testid="god-mode-page">
             {/* MAP */}
@@ -187,22 +217,25 @@ export default function GodMode() {
                     url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                     attribution='&copy; <a href="https://carto.com">CARTO</a>'
                 />
-                <MapClickCatcher onClick={onMapClick} />
+                <MapClickCatcher onClick={handleMapClick} />
 
                 {incidents.map((i) => {
                     const sev = severityVariant(i.severity);
+                    const teal = tealSet.has(i.id);
+                    const dim = isSim;
                     return (
                         <CircleMarker
                             key={i.id}
                             center={[i.lat, i.lng]}
-                            radius={4 + (Number(i.closure_prob) || 0) * 8}
+                            radius={teal ? 5 : 4 + (Number(i.closure_prob) || 0) * 8}
                             pathOptions={{
-                                color: sevColor(i.severity),
-                                fillColor: sevColor(i.severity),
-                                fillOpacity: sev === "high" ? 0.65 : 0.35,
-                                weight: sev === "high" ? 2 : 1,
+                                color: teal ? "#14b8a6" : sevColor(i.severity),
+                                fillColor: teal ? "#14b8a6" : sevColor(i.severity),
+                                fillOpacity: teal ? 0.75 : dim ? 0.12 : sev === "high" ? 0.65 : 0.35,
+                                weight: teal ? 2 : dim ? 0.6 : sev === "high" ? 2 : 1,
+                                opacity: dim && !teal ? 0.4 : 1,
                             }}
-                            className={sev === "high" ? "pulse-high" : ""}
+                            className={!isSim && sev === "high" ? "pulse-high" : ""}
                         />
                     );
                 })}
@@ -241,7 +274,7 @@ export default function GodMode() {
                     />
                 )}
 
-                {popup && (
+                {popup && !isSim && (
                     <Popup position={[popup.lat, popup.lng]} eventHandlers={{ remove: () => setPopup(null) }}>
                         <div data-testid="dispatch-popup">
                             <div className="display" style={{ fontSize: 12, color: "var(--orange)", marginBottom: 8 }}>
@@ -290,7 +323,13 @@ export default function GodMode() {
                         </div>
                     </Popup>
                 )}
+
+                {/* Urban Architect: placed assets + coverage circles */}
+                {isSim && <SimulatePlacedAssets sim={sim} />}
             </MapContainer>
+
+            {/* Radar sweep overlay over the map */}
+            <SimulateRadarSweep radarKey={sim.radarKey} active={isSim && sim.isSimulating} />
 
             {/* HEADER OVERLAY */}
             <div style={{ position: "absolute", top: 14, left: 14, right: 14, zIndex: 500, display: "flex", gap: 10 }}>
@@ -319,18 +358,25 @@ export default function GodMode() {
                         </button>
                     ))}
                 </div>
+                {isSim && <SimulateBudgetBar sim={sim} />}
             </div>
 
-            {/* LEFT: AGENT ACTIVITY */}
+            {/* LEFT: AGENT ACTIVITY (or ASSET PALETTE in Simulate) */}
             <div
                 style={{
                     position: "absolute",
-                    top: 70,
+                    top: isSim ? 90 : 70,
                     left: 14,
-                    width: 340,
+                    width: 360,
                     zIndex: 500,
+                    maxHeight: "calc(100vh - 110px)",
+                    overflowY: "auto",
                 }}
             >
+                {isSim ? (
+                    <SimulateAssetPalette sim={sim} incidents={incidents} />
+                ) : (
+                    <>
                 <Panel title="AGENT ACTIVITY" right={planning ? <LiveDot /> : null} testId="agent-panel">
                     {STEPS.map((s) => {
                         const evt = steps[s];
@@ -383,22 +429,29 @@ export default function GodMode() {
                         </div>
                     </Panel>
                 )}
+                    </>
+                )}
             </div>
 
-            {/* RIGHT: STATIONS + FEED */}
+            {/* RIGHT: STATIONS + FEED (or CITY HEALTH in Simulate) */}
             <div
                 style={{
                     position: "absolute",
-                    top: 70,
+                    top: isSim ? 90 : 70,
                     right: 14,
-                    width: 320,
+                    width: 340,
                     zIndex: 500,
                     display: "flex",
                     flexDirection: "column",
                     gap: 10,
-                    maxHeight: "calc(100vh - 90px)",
+                    maxHeight: "calc(100vh - 110px)",
+                    overflowY: "auto",
                 }}
             >
+                {isSim ? (
+                    <SimulateCityHealth sim={sim} />
+                ) : (
+                <>
                 <Panel title={`STATION STATUS · ${stationsMerged.length}`} testId="stations-panel">
                     <div style={{ maxHeight: 280, overflow: "auto", paddingRight: 4 }}>
                         {stationsMerged.length === 0 &&
@@ -441,10 +494,12 @@ export default function GodMode() {
                         ))}
                     </div>
                 </Panel>
+                </>
+                )}
             </div>
 
             {/* DIRECTIVE FLOATER */}
-            {directive && (
+            {directive && !isSim && (
                 <div className="slide-up" style={{ position: "absolute", left: 370, top: 70, width: 380, zIndex: 500 }}>
                     <Panel title="CRISIS COMMS DIRECTIVE" right={<Badge variant="orange">LIVE</Badge>} testId="directive-panel">
                         {directive.tweet && (
@@ -464,7 +519,7 @@ export default function GodMode() {
             )}
 
             {/* PLAN OUTPUT */}
-            {steps.complete && (
+            {steps.complete && !isSim && (
                 <div className="slide-up" style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: 20, width: 540, zIndex: 500 }}>
                     <Panel title="PLAN OUTPUT" right={<Badge variant={severityVariant(triage?.severity_tier)}>{triage?.severity_tier || "—"}</Badge>} testId="plan-output">
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
