@@ -18,8 +18,15 @@
     --amber: #f59e0b;
     --red: #ef4444;
     --blue: #3b82f6;
-    --font-display: "Rajdhani", system-ui, sans-serif;
-    --font-mono: "Share Tech Mono", "JetBrains Mono", monospace;
+    --font-display: "Rajdhani", "Noto Sans Kannada", system-ui, sans-serif;
+    --font-mono: "Share Tech Mono", "Noto Sans Kannada", "JetBrains Mono", monospace;
+}
+
+/* Kannada glyphs always rendered via Noto Sans Kannada — applied via :lang */
+:lang(kn),
+.kn,
+[data-lang="kn"] {
+    font-family: "Noto Sans Kannada", "Rajdhani", system-ui, sans-serif !important;
 }
 
 * {
@@ -1066,5 +1073,144 @@ select:focus {
     font-weight: 700;
     letter-spacing: 0.04em;
     text-shadow: 0 0 14px currentColor;
+}
+
+/* ===== Language toggle (EN / ಕನ್ನಡ pill) ===== */
+.lang-toggle {
+    position: relative;
+    display: inline-flex;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    overflow: hidden;
+}
+.lang-toggle button {
+    position: relative;
+    z-index: 2;
+    background: transparent;
+    border: none;
+    padding: 6px 14px;
+    font-family: var(--font-display);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: color 0.25s;
+    min-width: 50px;
+}
+.lang-toggle button.active {
+    color: var(--bg);
+}
+.lang-toggle-track {
+    position: absolute;
+    z-index: 1;
+    top: 3px;
+    bottom: 3px;
+    width: calc(50% - 3px);
+    background: linear-gradient(90deg, var(--orange), #fbbf24);
+    border-radius: 999px;
+    box-shadow: 0 0 18px rgba(249, 115, 22, 0.5);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lang-toggle-track[data-pos="en"] {
+    transform: translateX(0);
+}
+.lang-toggle-track[data-pos="kn"] {
+    transform: translateX(100%);
+}
+
+/* ===== VoicePulse rings + core ===== */
+.vp-rig {
+    transform: rotateX(var(--vp-tx, 0deg)) rotateY(var(--vp-ty, 0deg));
+}
+.vp-pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: vpPulse 2.4s ease-out infinite;
+    opacity: 0;
+}
+@keyframes vpPulse {
+    0% {
+        transform: scale(0.4);
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(3.2);
+        opacity: 0;
+    }
+}
+.vp-core {
+    animation: vpCore 3s ease-in-out infinite;
+}
+@keyframes vpCore {
+    0%,
+    100% {
+        opacity: 0.85;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+.vp-blink {
+    animation: vpBlink 1.4s ease-in-out infinite;
+}
+@keyframes vpBlink {
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* ===== Animated tick mark on submit ===== */
+.tick-ring {
+    stroke-dasharray: 277;
+    stroke-dashoffset: 277;
+    animation: tickRingDraw 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    filter: drop-shadow(0 0 12px var(--green));
+}
+.tick-mark {
+    stroke-dasharray: 80;
+    stroke-dashoffset: 80;
+    animation: tickMarkDraw 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards;
+    filter: drop-shadow(0 0 8px var(--green));
+}
+@keyframes tickRingDraw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+@keyframes tickMarkDraw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+.tick-burst {
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    border: 2px solid var(--green);
+    pointer-events: none;
+    animation: tickBurst 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+    opacity: 0;
+}
+.tick-burst-2 {
+    animation-delay: 0.85s;
+}
+@keyframes tickBurst {
+    0% {
+        opacity: 0.6;
+        transform: scale(0.6);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(2.4);
+    }
 }
 

@@ -208,6 +208,34 @@ async def simulate_city(req: SimRequest):
         "economic_value_inr": round(economic_value_inr, 2),
     }
 
+
+# ============================================================================
+# /api/complaints  (Bilingual citizen submissions, anonymous)
+# ----------------------------------------------------------------------------
+# Light pod stub: stores in memory so the Complaint Portal demo confirms
+# end-to-end. Wire your real persistence/queue in production.
+# ============================================================================
+class Complaint(BaseModel):
+    language: str
+    category: str
+    text: str
+    submitted_at: str
+
+
+_COMPLAINTS: List[dict] = []
+
+
+@api_router.post("/complaints")
+async def submit_complaint(c: Complaint):
+    record = c.model_dump()
+    _COMPLAINTS.append(record)
+    return {"ok": True, "queued": len(_COMPLAINTS)}
+
+
+@api_router.get("/complaints")
+async def list_complaints(limit: int = 20):
+    return list(reversed(_COMPLAINTS[-limit:]))
+
 # Include the router in the main app
 app.include_router(api_router)
 

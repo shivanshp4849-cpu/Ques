@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 const ROUTES = [
     { path: "/", label: "Landing · Intro", hint: "/" },
     { path: "/god-mode", label: "God Mode · Live Map", hint: "⊕" },
-    { path: "/sentinel", label: "Citizen Sentinel Grid", hint: "📡" },
+    { path: "/sentinel", label: "Complaint Portal", hint: "📡" },
     { path: "/intelligence", label: "Intelligence Dashboard", hint: "📊" },
     { path: "/debrief", label: "The Debrief", hint: "🔍" },
 ];

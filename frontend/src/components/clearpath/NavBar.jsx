@@ -5,7 +5,7 @@ import DataCrystal from "./DataCrystal";
 
 const LINKS = [
     { to: "/god-mode", label: "GOD MODE", icon: "⊕" },
-    { to: "/sentinel", label: "SENTINEL", icon: "📡" },
+    { to: "/sentinel", label: "COMPLAINT PORTAL", icon: "📡" },
     { to: "/intelligence", label: "INTELLIGENCE", icon: "📊" },
     { to: "/debrief", label: "DEBRIEF", icon: "🔍" },
 ];

@@ -242,7 +242,7 @@ function LandingContent({ visible }) {
                 <nav style={{ display: "flex", gap: 18, alignItems: "center" }}>
                     {[
                         ["GOD MODE", "/god-mode"],
-                        ["SENTINEL", "/sentinel"],
+                        ["COMPLAINTS", "/sentinel"],
                         ["INTELLIGENCE", "/intelligence"],
                         ["DEBRIEF", "/debrief"],
                     ].map(([t, to]) => (
